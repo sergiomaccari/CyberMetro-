@@ -3,6 +3,11 @@
 #include "Projetil.h"
 #include "ListaEntidades.h"
 
+// declaracao antecipada para evitar include circular
+namespace Fases {
+    class Fase;
+}
+
 namespace Personagens
 {
     class Jogador : public Personagem
@@ -14,9 +19,12 @@ namespace Personagens
         int playerNum;
         float ultimaDirecaoX;
         static const float PROJETIL_VELOCIDADE_JOGADOR;
-        bool estaNoChao;
+
         sf::Time stun;
         sf::Time obstaculoCooldown;
+
+        Fases::Fase* pFaseAtual;
+
 
     public:
         Jogador(int numJogador);
@@ -29,7 +37,10 @@ namespace Personagens
         void setEstaNoChao(bool noChao);
         ListaEntidades* getProjeteis();
         void trava_mov(float t);
+
         void iniciarObstaculoCooldown(sf::Time duracao);
         sf::Time getObstaculoCooldown() const;
+
+        void resetar(float posX, float posY);
     };
 }

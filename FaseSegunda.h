@@ -8,7 +8,6 @@ namespace Fases {
     class FaseSegunda : public Fase
     {
     private:
-        // Constantes para numero de entidades
         static const int MIN_JUNIOR;
         static const int MAX_JUNIOR;
         static const int MIN_CEO;

@@ -28,6 +28,7 @@ class Ente;
 namespace Personagens
 {
     class Jogador;
+    class Personagem;
 }
 
 class Gerenciador_Grafico

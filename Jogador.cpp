@@ -1,28 +1,28 @@
 #include "Jogador.h"
 #include "Projetil.h"
-// include "Fase.h" removido
-// include <cmath> removido
+#include "Fase.h" 
+#include "Gerenciador_Grafico.h"
 
 using namespace Entidades;
 namespace Personagens
 {
 	const float Jogador::PROJETIL_VELOCIDADE_JOGADOR = 3.0f;
-	// constantes de buff removidas
 
 	Jogador::Jogador(int numJogador) :
-		Personagem(), // chamada ao construtor padrao de Entidade
+		Personagem(),
 		pontos(0),
 		cooldown(0),
 		playerNum(numJogador),
 		ultimaDirecaoX(1.0f),
-		estaNoChao(false),
 		stun(sf::Time::Zero),
-		obstaculoCooldown(sf::Time::Zero)
+		obstaculoCooldown(sf::Time::Zero),
+		pFaseAtual(nullptr)
 	{
-		this->x = 32;//inicializado uma pos padrao nessa construtora
+		this->x = 32;
 		this->y = 32;
 		this->velocidade = 300.0f;
-		this->n_vidas = 1000000;//testes
+		this->n_vidas = 1000; //ver esses valores, tava usando como teste
+		this->n_vidas_max = 1000;
 
 		std::string caminhoTextura = (playerNum == 1) ? "Imagens/jogador1.png" : "Imagens/jogador2.png";
 
@@ -42,7 +42,7 @@ namespace Personagens
 
 
 		pFigura->setPosition(sf::Vector2f(static_cast<float>(this->x), static_cast<float>(this->y)));
-
+		atualizarBarraVida();
 	}
 
 
@@ -52,12 +52,13 @@ namespace Personagens
 		cooldown(0),
 		playerNum(numJogador),
 		ultimaDirecaoX(1.0f),
-		estaNoChao(false),
 		stun(sf::Time::Zero),
-		obstaculoCooldown(sf::Time::Zero)
-		// inicializacao de pFaseAtual e buffAtivo removida
+		obstaculoCooldown(sf::Time::Zero),
+		pFaseAtual(nullptr)
 	{
-
+		this->n_vidas = 1000;
+		this->n_vidas_max = 1000;
+		atualizarBarraVida();
 	}
 
 
@@ -66,8 +67,22 @@ namespace Personagens
 		movimento = sf::Vector2f(0.0f, 0.0f);
 	}
 
-	// metodo setFase removido
-	// metodos verificarBuffs e estaPertoDeChefe removidos
+
+	//ATENCION POOKIE, ESSA FUNCAO QUE EU FIZ EH MT IMPORTANTE. RESETA O JOGADOR CONFORME TU FINALIZA UMA FASE OU QUITA, EVITA OS BUGS DE RESPAWN QUE EU TINHA DITO
+	void Jogador::resetar(float posX, float posY)
+	{
+		this->x = posX;
+		this->y = posY;
+		setPosicaoGrafica(x, y);
+
+		this->n_vidas = n_vidas_max;
+		this->vel_grav = 0.0f;
+		this->estaAtivo = true;
+		this->stun = sf::Time::Zero;
+		this->obstaculoCooldown = sf::Time::Zero;
+
+		atualizarBarraVida();
+	}
 
 
 	void Jogador::mover()
@@ -100,26 +115,31 @@ namespace Personagens
 			return;
 		}
 
+
 		if (playerNum == 1)
 		{
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) //+y
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+			{
 				movimento += sf::Vector2f(0.0f, -1.0f);
+			}
 
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) //+x
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 			{
 				movimento += sf::Vector2f(1.0f, 0.0f);
 				ultimaDirecaoX = 1.0f;
 			}
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))//-x
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 			{
 				movimento += sf::Vector2f(-1.0f, 0.0f);
 				ultimaDirecaoX = -1.0f;
 			}
 		}
-		else if (playerNum == 2) // p2 setas
+		else if (playerNum == 2)
 		{
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+			{
 				movimento += sf::Vector2f(0.0f, -1.0f);
+			}
 
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			{
@@ -145,9 +165,15 @@ namespace Personagens
 	{
 		if (this->getAtivo())
 		{
-			// chamada de verificarBuffs removida
 			this->mover();
 			this->atirar();
+			atualizarBarraVida();
+
+			// ATENCION POOKIE, ESSA PARTE EVITA BUGS DE SPAWN QUANDO O JOGADOR FICAVA CAINDO ENTRE FASES. TALVEZ SEJA MASSA FAZER 
+			if (this->y > MUNDO_Y_MAX + 200)
+			{
+				this->setAtivo(false);
+			}
 		}
 		projeteis.executar();
 	}
@@ -166,8 +192,6 @@ namespace Personagens
 			tiroPressionado = true;
 		else if (playerNum == 2 && sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
 			tiroPressionado = true;
-
-		// logica de buff removida
 
 
 		if (tiroPressionado && cooldown == 0) {
@@ -193,19 +217,12 @@ namespace Personagens
 			novoProjetil->setX(spawnX);
 			novoProjetil->setY(y + 7.5f);
 
-			// usa a velocidade padrao
 			novoProjetil->setVelocidade(PROJETIL_VELOCIDADE_JOGADOR * ultimaDirecaoX, 0.0f);
 
 			novoProjetil->setDoBem(true);
 			projeteis.inserir(novoProjetil);
-			// usa o cooldown padrao
 			cooldown = 120;
 		}
-	}
-
-	void Jogador::setEstaNoChao(bool noChao)
-	{
-		estaNoChao = noChao;
 	}
 
 

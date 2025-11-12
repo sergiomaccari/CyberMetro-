@@ -12,8 +12,6 @@ using json = nlohmann::json;
 using namespace Personagens;
 
 namespace Fases {
-
-	// Definicao das constantes
 	const int FasePrimeira::MIN_JUNIOR = 3;
 	const int FasePrimeira::MAX_JUNIOR = 5;
 	const int FasePrimeira::MIN_SENIOR = 3;
@@ -26,18 +24,21 @@ namespace Fases {
 	FasePrimeira::FasePrimeira(Jogador* jogador1, Jogador* jogador2)
 		: Fase(jogador1, jogador2)
 	{
-		// --- LOGICA DE SPAWN ADICIONADA AQUI ---
 		if (pJogador1) {
-			pJogador1->setX(32 * 1); // Posicao da Fase 1
-			pJogador1->setY(32 * 24);
-			pJogador1->setPosicaoGrafica(pJogador1->getX(), pJogador1->getY());
+			pJogador1->resetar(32 * 1, 32 * 24);
 		}
 		if (pJogador2 && pJogador2->getAtivo()) {
-			pJogador2->setX(pJogador1->getX() + 50.0f); // Perto do P1
-			pJogador2->setY(pJogador1->getY());
-			pJogador2->setPosicaoGrafica(pJogador2->getX(), pJogador2->getY());
+			pJogador2->resetar(pJogador1->getX() + 50.0f, pJogador1->getY());
 		}
-		// --- FIM DA LOGICA DE SPAWN ---
+		this->areaDeSaida = sf::FloatRect(32.0f * 85.0f, 32.0f * 12.0f, 64.0f, 128.0f);
+		this->spriteSaida.setPosition(this->areaDeSaida.left, this->areaDeSaida.top);
+		sf::Vector2u texSize = this->texturaSaida.getSize();
+		if (texSize.x > 0 && texSize.y > 0) {
+			this->spriteSaida.setScale(
+				this->areaDeSaida.width / texSize.x,
+				this->areaDeSaida.height / texSize.y
+			);
+		}
 
 
 		if (!texturaTileset.loadFromFile("cyberpunk_floor_tiles_256x256_v3.png"))
@@ -45,33 +46,61 @@ namespace Fases {
 			std::cerr << "Erro: Nao foi possivel carregar o tileset " << std::endl;
 		}
 
-		// --- CARREGA VETORES DE SPAWN ---
-		// Posições de Robo Junior (herdado de Fase)
-		posi_robo_junior = {
-			{32 * 35, 32 * 2}, {32 * 29, 32 * 5}, {32 * 39, 32 * 7}, {32 * 71, 32 * 7},
-			{32 * 77, 32 * 7}, {32 * 83, 32 * 7}, {32 * 13, 32 * 10}, {32 * 17, 32 * 10},
-			{32 * 15, 32 * 14}, {32 * 19, 32 * 14}, {32 * 45, 32 * 19}, {32 * 68, 32 * 19},
-			{32 * 76, 32 * 19}, {32 * 83, 32 * 19}, {32 * 4, 32 * 24}, {32 * 9, 32 * 24},
-			{32 * 16, 32 * 24}, {32 * 21, 32 * 24}, {32 * 46, 32 * 24}, {32 * 51, 32 * 24},
-			{32 * 57, 32 * 24}, {32 * 63, 32 * 24}, {32 * 69, 32 * 24}, {32 * 75, 32 * 24},
-			{32 * 81, 32 * 24}, {32 * 87, 32 * 24}, {32 * 93, 32 * 24}
-		};
-		// Posições de Robo Senior (especifico da Fase 1)
-		posi_robo_senior = {
-			{32 * 9, 32 * 2}, {32 * 15, 32 * 2}, {32 * 18, 32 * 2}, {32 * 24, 32 * 2},
-			{32 * 50, 32 * 2}, {32 * 56, 32 * 2}, {32 * 63, 32 * 2}, {32 * 70, 32 * 2},
-			{32 * 77, 32 * 2}, {32 * 60, 32 * 14}, {32 * 66, 32 * 14}, {32 * 72, 32 * 14},
-			{32 * 78, 32 * 14}, {32 * 28, 32 * 20}
-		};
 
-		// Posições de Plataforma (herdado de Fase)
+		posi_robo_junior = {
+			{32 * 35, 32 * 2},
+			{32 * 29, 32 * 5},
+			{32 * 39, 32 * 7},
+			{32 * 71, 32 * 7},
+			{32 * 77, 32 * 7},
+			{32 * 83, 32 * 7},
+			{32 * 13, 32 * 10},
+			{32 * 17, 32 * 10},
+			{32 * 15, 32 * 14},
+			{32 * 19, 32 * 14},
+			{32 * 45, 32 * 19},
+			{32 * 68, 32 * 19},
+			{32 * 76, 32 * 19},
+			{32 * 83, 32 * 19},
+			{32 * 4, 32 * 24},
+			{32 * 9, 32 * 24},
+			{32 * 16, 32 * 24},
+			{32 * 21, 32 * 24},
+			{32 * 46, 32 * 24},
+			{32 * 51, 32 * 24},
+			{32 * 57, 32 * 24},
+			{32 * 63, 32 * 24},
+			{32 * 69, 32 * 24},
+			{32 * 75, 32 * 24},
+			{32 * 81, 32 * 24},
+			{32 * 87, 32 * 24},
+			{32 * 93, 32 * 24}
+		};
+		posi_robo_senior = {
+			{32 * 9, 32 * 2},
+			{32 * 15, 32 * 2},
+			{32 * 18, 32 * 2},
+			{32 * 24, 32 * 2},
+			{32 * 50, 32 * 2},
+			{32 * 56, 32 * 2},
+			{32 * 63, 32 * 2},
+			{32 * 70, 32 * 2},
+			{32 * 77, 32 * 2},
+			{32 * 60, 32 * 14},
+			{32 * 66, 32 * 14},
+			{32 * 72, 32 * 14},
+			{32 * 78, 32 * 14},
+			{32 * 28, 32 * 20}
+		};
 		posi_plataforma = {
-			{32 * 1, 32 * 11, (float)(9 * 32)}, {32 * 11, 32 * 17, (float)(3 * 32)}, {32 * 24, 32 * 12, (float)(3 * 32)},
-			{32 * 33, 32 * 20, (float)(5 * 32)}, {32 * 55, 32 * 18, (float)(2 * 32)}, {32 * 92, 32 * 13, (float)(7 * 32)},
+			{32 * 1, 32 * 11, (float)(9 * 32)},
+			{32 * 11, 32 * 17, (float)(3 * 32)},
+			{32 * 24, 32 * 12, (float)(3 * 32)},
+			{32 * 33, 32 * 20, (float)(5 * 32)},
+			{32 * 55, 32 * 18, (float)(2 * 32)},
+				{32 * 92, 32 * 13, (float)(7 * 32)},
 			{32 * 98, 32 * 13, (float)(12 * 32)}
 		};
-
-		// Posições de Gelinho (especifico da Fase 1)
 		posi_gelinho = {
 			{32 * 5, 32 * 2}, {32 * 12, 32 * 2}, {32 * 21, 32 * 2}, {32 * 53, 32 * 2},
 			{32 * 60, 32 * 2}, {32 * 67, 32 * 2}, {32 * 74, 32 * 2}, {32 * 81, 32 * 2},
@@ -80,7 +109,6 @@ namespace Fases {
 			{32 * 67, 32 * 24}, {32 * 74, 32 * 24}, {32 * 81, 32 * 24}, {32 * 88, 32 * 24},
 			{32 * 95, 32 * 24}
 		};
-		// --- FIM DA CARGA ---
 
 		criarObstaculos();
 		criarInimigos();
@@ -90,7 +118,6 @@ namespace Fases {
 
 	void FasePrimeira::criarInimigos()
 	{
-		// --- LOGICA DE SPAWN ALEATORIO PARA ROBO JUNIOR ---
 		int totalPosJuniors = posi_robo_junior.size();
 		int numJuniors = MIN_JUNIOR + (rand() % (MAX_JUNIOR - MIN_JUNIOR + 1));
 		numJuniors = std::min(numJuniors, totalPosJuniors);
@@ -116,8 +143,6 @@ namespace Fases {
 	void FasePrimeira::criarObstaculos()
 	{
 		criarMapa();
-
-		// --- LOGICA DE SPAWN ALEATORIO PARA PLATAFORMA ---
 		int totalPosPlataformas = posi_plataforma.size();
 		int numPlataformas = MIN_PLATAFORMA + (rand() % (MAX_PLATAFORMA - MIN_PLATAFORMA + 1));
 		numPlataformas = std::min(numPlataformas, totalPosPlataformas);
@@ -125,15 +150,10 @@ namespace Fases {
 		for (int i = 0; i < numPlataformas; ++i) {
 			int j = i + (rand() % (totalPosPlataformas - i));
 			std::swap(posi_plataforma[i], posi_plataforma[j]);
-
-			// Acessamos os dados com .x, .y, .z
 			sf::Vector3f& spawn = posi_plataforma[i];
-
-			// fazemos o cast de 'z' (float) de volta para 'int'
 			criarPlataforma(spawn.x, spawn.y, (int)spawn.z);
 		}
 
-		// --- LOGICA DE SPAWN ALEATORIO PARA GELINHO ---
 		int totalPosGelinhos = posi_gelinho.size();
 		int numGelinhos = MIN_GELINHO + (rand() % (MAX_GELINHO - MIN_GELINHO + 1));
 		numGelinhos = std::min(numGelinhos, totalPosGelinhos);
@@ -147,9 +167,9 @@ namespace Fases {
 
 	void FasePrimeira::criarMapa()
 	{
-		std::ifstream file("tiledcyber3.json");//armazenar futuramente como constante
+		std::ifstream file("tiledcyber3.json");
 		if (!file.is_open()) {
-			std::cerr << "Erro: nao abriu 'tiledcyber3.json'" << std::endl;
+			std::cerr << "Erro: Nao foi possivel abrir 'tiledcyber3.json'" << std::endl;
 			return;
 		}
 

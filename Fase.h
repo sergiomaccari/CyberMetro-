@@ -2,20 +2,26 @@
 #include "ListaEntidades.h"
 #include "Gerenciador_Colisoes.h"
 #include "Jogador.h"
-#include <vector>
-#include <SFML/System/Vector3.hpp> // Necessario para sf::Vector3f, eu achei esse o melhor jeito de fazer
+#include <vector> 
+#include <SFML/System/Vector3.hpp> 
+#include <SFML/Graphics.hpp> // Necessario para Sprite e Texture
 
 
 using namespace Personagens;
 using namespace Gerenciadores;
 
-// declaracao antecipada para quebrar chamada circular
+// declaracao antecipada para quebrar dependencia circular
 class Jogo;
 
 namespace Fases {
 	class Fase : public Ente
 	{
 	protected:
+		struct SpawnPlataforma {
+			float x;
+			float y;
+			int altura;
+		};
 
 		sf::Texture texturaTileset;
 		std::vector<std::vector<unsigned int>> gridMapa;
@@ -32,7 +38,13 @@ namespace Fases {
 		std::vector<sf::Vector2f> posi_robo_junior;
 		std::vector<sf::Vector3f> posi_plataforma;
 
-		const int TILESET_LARGURA_EM_BLOCOS = 8;//pq cacete é 8? R: pq a imagem tem 256px e cada bloco 32px, 256/32=8
+		sf::FloatRect areaDeSaida; // Area de saida da fase
+
+		// --- CORRECAO AQUI ---
+		sf::Texture texturaSaida; // <-- Estava como sf::Sprite
+		sf::Sprite spriteSaida;
+
+		const int TILESET_LARGURA_EM_BLOCOS = 8;
 		const float TAMANHO_BLOCO_X = 32.0f;
 		const float TAMANHO_BLOCO_Y = 32.0f;
 		void criarRoboJunior(float x, float y);
@@ -42,10 +54,17 @@ namespace Fases {
 
 		Jogo* pJogo;
 
+		void verificarFimDeFase();
+
+		bool terminou;
+
 	public:
 		Fase(Jogador* jogador1, Jogador* jogador2 = nullptr);
 		virtual ~Fase();
-		virtual void executar();
+
+		virtual void executar() override;
+		void desenharFase();
+
 		void limpar();
 		virtual void adicionarJogador2(Jogador* j2);
 		virtual void criarInimigos() = 0;
@@ -53,6 +72,8 @@ namespace Fases {
 		void criarMapa();
 		virtual void desenharMapa();
 
-		void setJogo(Jogo* pJ); // setter para o ponteiro do Jogo
+		void setJogo(Jogo* pJ);
+
+		bool getTerminou() const;
 	};
 }

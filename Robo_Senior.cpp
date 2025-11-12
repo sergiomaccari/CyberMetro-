@@ -5,21 +5,21 @@
 
 namespace Personagens {
 
-    // v = sqrt(2 * g * h) // v = sqrt(2 * 0.025 * 32.0) = sqrt(1.6)
-    // 0.025 eh o 'grav' de Entidade.h
-    const float Robo_Senior::ALTURA_PULO = 32.0f;
-    const float Robo_Senior::FORCA_PULO = -1.264911064f; // negativo eh para cima
+    const float Robo_Senior::ALTURA_PULO = 64.0f;
+    const float Robo_Senior::FORCA_PULO = -1.78885438f;
 
     Robo_Senior::Robo_Senior(float xi, float yi) :
         Inimigo(xi, yi),
         tamanho((rand() % 12) + 42),
-        estaNoChao(true) // comeca no chao
+        estaNoChao(true)
     {
         this->xINI = xi;
         this->x = xi;
         this->y = yi;
-        this->velocidade = 300.0f; // nao eh mais usado no movimento
+        this->velocidade = 300.0f;
         this->n_vidas = 2;
+        this->n_vidas_max = 2; // define a vida maxima
+
         if (pGG)
         {
             sf::Texture* tex = pGG->getTextura("Imagens/inimigo_medio.png");
@@ -35,6 +35,7 @@ namespace Personagens {
         }
 
         pFigura->setPosition(sf::Vector2f(this->x, this->y));
+        atualizarBarraVida(); // inicializa a barra
 
         this->intervaloCura = sf::seconds(15.0f - ((float)(this->tamanho - 42) / 11.0f * 5.0f));//vai de 15 a 10 segundos
         this->tempoCura.restart();
@@ -46,22 +47,21 @@ namespace Personagens {
 
     void Robo_Senior::mover()
     {
-        // essa logica nao usa mais o vetor 'movimento' nem a 'velocidade'
-        // ela aplica a gravidade diretamente no 'y'
-        // essa eh a gravidade que eu quero implementar pra todo mundo
         tempo = clock.restart();
+
         if (vel_grav == 0.0f)
         {
             estaNoChao = true;
         }
+
         if (estaNoChao)
         {
             vel_grav = FORCA_PULO;
             estaNoChao = false;
         }
+
         vel_grav += grav;
         this->y += vel_grav;
-
         this->x = xINI;
 
         setPosicaoGrafica(this->x, this->y);
@@ -83,9 +83,11 @@ namespace Personagens {
     void Robo_Senior::executar()
     {
         this->mover();
+        atualizarBarraVida();
+
         if (tempoCura.getElapsedTime() > intervaloCura)
         {
-            if (this->n_vidas < 2) {//PRESUMINDO QUE N VIDAS MENOR QUE 2, A CONSTANTE QUE LIMITE É A VIDA TOTAL, TALVEZ IMPLEMENTAR ALGO COMO UM GETTER
+            if (this->n_vidas < 2) {// definir constante para n vida max e estudar a possibilidade de colcoar isso em uma outra função
                 Personagem::operator++();
             }
             tempoCura.restart();

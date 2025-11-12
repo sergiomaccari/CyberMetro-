@@ -1,5 +1,6 @@
 #include "Gerenciador_Grafico.h"
-#include "Jogador.h" 
+#include "Jogador.h" // Ja inclui Personagem.h
+// #include "Personagem.h" // Adicionado para a logica da barra de vida
 
 using namespace Personagens;
 
@@ -75,6 +76,14 @@ void Gerenciador_Grafico::desenharEnte(const Ente* pe)
 	if (this->janela && pe && pe->getFigura())
 	{
 		this->janela->draw(*(pe->getFigura()));
+
+		const Personagens::Personagem* pPersonagem = dynamic_cast<const Personagens::Personagem*>(pe);
+
+		if (pPersonagem && pPersonagem->getAtivo())
+		{
+			this->janela->draw(pPersonagem->getBarraFundo());
+			this->janela->draw(pPersonagem->getBarraAtual());
+		}
 	}
 }
 

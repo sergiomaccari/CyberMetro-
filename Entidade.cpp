@@ -11,8 +11,7 @@ namespace Entidades
 
     Entidade::Entidade() : estaAtivo(true), vel_grav(0)
     {
-        this->x = 0.0f;
-        this->y = 0.0f;
+    
     }
     Entidade::~Entidade()
     {

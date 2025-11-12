@@ -41,7 +41,6 @@ namespace Gerenciadores
 			LOs.push_back(po);
 	}
 
-	// NOVA IMPLEMENTACAO
 	void Gerenciador_Colisoes::incluirChao(Entidades::Chao* pc)
 	{
 		if (pc)
@@ -139,7 +138,7 @@ namespace Gerenciadores
 							p2->setY(boundsO.top + boundsO.height);
 						}
 					}
-					else { //lado
+					else {
 
 						if (boundsJ.left < boundsO.left)
 							p2->setX(boundsO.left - boundsJ.width);
@@ -203,7 +202,10 @@ namespace Gerenciadores
 		while (it_proj != LPs.end())
 		{
 			Entidades::Projetil* proj = *it_proj;
-			if (!proj->getAtivo()) { ++it_proj; continue; }
+			if (!proj->getAtivo()) 
+			{ 
+				++it_proj; continue; 
+			}
 
 			for (auto it_obst = LOs.begin(); it_obst != LOs.end(); ++it_obst)
 			{
@@ -223,8 +225,6 @@ namespace Gerenciadores
 		for (auto it_A = LOs.begin(); it_A != LOs.end(); ++it_A)
 		{
 			Obstaculos::Obstaculo* obstA = *it_A;
-
-			// verificacao de getMovel() removida
 			if (!obstA || !obstA->getAtivo())
 				continue;
 
@@ -340,8 +340,9 @@ namespace Gerenciadores
 				Entidades::Projetil* proj = *it_proj;
 				if (proj->getAtivo() && !proj->getDoBem() && verificarColisao(p1, proj))
 				{
-
-					p1->operator--();
+					for (int i = 0; i < proj->getDano(); i++) {
+						p1->operator--();
+					}
 					proj->setAtivo(false);
 				}
 				++it_proj;
@@ -356,7 +357,9 @@ namespace Gerenciadores
 				Entidades::Projetil* proj = *it_proj;
 				if (proj->getAtivo() && !proj->getDoBem() && verificarColisao(p2, proj))
 				{
-					p2->operator--();
+					for (int i = 0; i < proj->getDano(); i++) {
+						p2->operator--();
+					}
 					proj->setAtivo(false);
 				}
 				++it_proj;
@@ -377,14 +380,20 @@ namespace Gerenciadores
 				while (it_inim != LIs.end())
 				{
 					Personagens::Inimigo* inim = *it_inim;
-					if (!inim || !inim->getAtivo()) {
+					if (!inim || !inim->getAtivo()) 
+					{
 						++it_inim;
 						continue;
 					}
 
 					if (verificarColisao(proj, inim))
 					{
-						inim->operator--();
+						
+						for (int i = 0; i < proj->getDano(); i++) 
+						{
+							inim->operator--();
+						}
+						
 						proj->setAtivo(false);
 
 						break;
@@ -508,18 +517,18 @@ namespace Gerenciadores
 					boundsJ.intersects(boundsC, intersection);
 
 					if (intersection.width > intersection.height) {
-						if (boundsJ.top < boundsC.top) //cima
+						if (boundsJ.top < boundsC.top)
 						{
 							p2->setVel_Grav(0);
 							p2->setY(boundsC.top - boundsJ.height);
 						}
-						else // baixo
+						else
 						{
 							p1->setMovimentoY(2.0f);
 							p2->setY(boundsC.top + boundsC.height);
 						}
 					}
-					else { //lado
+					else {
 
 						if (boundsJ.left < boundsC.left)
 							p2->setX(boundsC.left - boundsJ.width);
@@ -530,7 +539,6 @@ namespace Gerenciadores
 						p2->setVel_Grav(0);
 					}
 					p2->setPosicaoGrafica(p2->getX(), p2->getY());
-					// Sem chamada obstaculizar()
 				}
 			}
 		}
@@ -582,7 +590,10 @@ namespace Gerenciadores
 		while (it_proj != LPs.end())
 		{
 			Entidades::Projetil* proj = *it_proj;
-			if (!proj->getAtivo()) { ++it_proj; continue; }
+			if (!proj->getAtivo()) 
+			{ 
+				++it_proj; continue; 
+			}
 
 			for (auto it_chao = LCs.begin(); it_chao != LCs.end(); ++it_chao)
 			{
@@ -602,7 +613,6 @@ namespace Gerenciadores
 		for (auto it_obst = LOs.begin(); it_obst != LOs.end(); ++it_obst)
 		{
 			Obstaculos::Obstaculo* obst = *it_obst;
-			// verificacao de getMovel() removida
 			if (obst && obst->getFigura() && obst->getAtivo())
 			{
 				sf::FloatRect boundsO = obst->getFigura()->getGlobalBounds();

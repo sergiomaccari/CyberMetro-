@@ -8,14 +8,15 @@ namespace Personagens {
         forca(rand() % 10 + 1),
         pJogador(nullptr),
         cooldownTiro(COOLDOWN_TIRO_CHEFE),
-        PROJETIL_VELOCIDADE_CHEFE(1.2f + 0.06f * (float)forca),//analisar valores
+        PROJETIL_VELOCIDADE_CHEFE(1.2f + 0.06f * (float)forca),
         COOLDOWN_TIRO_CHEFE(540 - 120 / forca),
-        FORCA_GRAVIDADE_CHEFE(-0.024999f)
+        FORCA_GRAVIDADE_CHEFE(-0.0249f)
     {
         this->x = xi;
         this->y = yi;
         this->velocidade = 150.0f;
         this->n_vidas = 10;
+        this->n_vidas_max = 10;
 
         if (pGG)
         {
@@ -32,6 +33,7 @@ namespace Personagens {
         }
 
         pFigura->setPosition(this->x, this->y);
+        atualizarBarraVida(); // inicializa a barra
     }
 
     Robo_CEO::~Robo_CEO()
@@ -75,8 +77,8 @@ namespace Personagens {
         Entidades::Projetil* p = new Entidades::Projetil();
         p->setGerenciadorGrafico(Ente::getGerenciadorGrafico());
 
-        float centroX = this->x + (60.0f / 2.0f) - (10.0f / 2.0f); 
-        float centroY = this->y + (60.0f / 2.0f) - (10.0f / 2.0f); 
+        float centroX = this->x + (60.0f / 2.0f) - (10.0f / 2.0f);
+        float centroY = this->y + (60.0f / 2.0f) - (10.0f / 2.0f);
         p->setX(centroX);
         p->setY(centroY);
 
@@ -116,6 +118,7 @@ namespace Personagens {
         this->mover();
         this->atirar();
         this->projeteis.executar();
+        atualizarBarraVida();
     }
 
     ListaEntidades* Robo_CEO::getProjeteis()

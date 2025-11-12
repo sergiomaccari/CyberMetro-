@@ -7,7 +7,9 @@
 #include "Projetil.h" 
 #include "Robo_Senior.h" 
 #include "Jogo.h" 
-#include "Gerenciador_Grafico.h" // Necessario para MUNDO_X_MAX
+#include "Gerenciador_Grafico.h" 
+#include <iostream> 
+#include <SFML/Graphics.hpp>
 
 namespace Fases {
 	Fase::Fase(Jogador* jogador1, Jogador* jogador2)
@@ -18,16 +20,16 @@ namespace Fases {
 		pListaObstaculos(nullptr),
 		pListaChao(nullptr),
 		pColisoes(nullptr),
-		pJogo(nullptr)
+		pJogo(nullptr),
+		areaDeSaida(0.f, 0.f, 0.f, 0.f),
+		terminou(false) // <-- INICIALIZAMOS AQUI
 	{
-		if (pJogador1) {
-			// Posicao de spawn foi MOVIDA para as classes filhas
-			pJogador1->setAtivo(true);
+		if (!texturaSaida.loadFromFile("Imagens/saida.png"))
+		{
+			std::cerr << "Erro: Nao foi possivel carregar Imagens/saida.png" << std::endl;
 		}
+		spriteSaida.setTexture(texturaSaida);
 
-		if (pJogador2 && pJogador2->getAtivo()) {
-			// Posicao de spawn foi MOVIDA para as classes filhas
-		}
 
 		pListaInimigos = new ListaEntidades();
 		pListaObstaculos = new ListaEntidades();
@@ -59,6 +61,33 @@ namespace Fases {
 		}
 	}
 
+	void Fase::verificarFimDeFase()
+	{
+		// se ja terminou nao precisa checar de novo
+		if (terminou || areaDeSaida.width == 0 || !pJogo) {
+			return;
+		}
+
+		bool jogadorTerminou = false;
+
+		if (pJogador1 && pJogador1->getAtivo()) {
+			if (areaDeSaida.intersects(pJogador1->getFigura()->getGlobalBounds())) {
+				jogadorTerminou = true;
+			}
+		}
+
+		if (pJogador2 && pJogador2->getAtivo()) {
+			if (areaDeSaida.intersects(pJogador2->getFigura()->getGlobalBounds())) {
+				jogadorTerminou = true;
+			}
+		}
+
+		if (jogadorTerminou) {
+			// pJogo->voltarAoMenu(); // <-- REMOVEMOS ISSO
+			terminou = true; // <-- ADICIONAMOS ISSO
+		}
+	}
+
 	void Fase::executar()
 	{
 		if (pJogador1)
@@ -66,23 +95,19 @@ namespace Fases {
 			pJogador1->executar();
 		}
 
-
 		if (pJogador2)
 		{
 			pJogador2->executar();
 		}
-
 
 		if (pListaInimigos)
 		{
 			pListaInimigos->executar();
 		}
 
-
 		if (pListaObstaculos) {
 			pListaObstaculos->executar();
 		}
-
 
 		if (pListaChao)
 		{
@@ -90,7 +115,6 @@ namespace Fases {
 		}
 
 		if (pColisoes) {
-
 			pColisoes->limparInimigos();
 			pColisoes->limparObstaculos();
 			pColisoes->limparProjeteis();
@@ -195,14 +219,17 @@ namespace Fases {
 			pColisoes->executar();
 		}
 
+		verificarFimDeFase();
+	}
+
+	void Fase::desenharFase()
+	{
 		Gerenciador_Grafico* pGG = Ente::getGerenciadorGrafico();
 		if (pGG)
 		{
-			pGG->clear();
 			pGG->getJanela()->setView(pGG->getJanela()->getDefaultView());
 			pGG->desenharBackground();
 
-			// verificacao de quem ta ativo pra camera foco
 			if (pJogador1 && pJogador1->getAtivo())
 			{
 				pGG->setCamera(pJogador1);
@@ -213,9 +240,10 @@ namespace Fases {
 			}
 
 			desenharMapa();
-			if (pListaObstaculos) pListaObstaculos->desenhar();
 
-			//chao nao eh desenhado, mapa cuida disso
+			pGG->getJanela()->draw(spriteSaida);
+
+			if (pListaObstaculos) pListaObstaculos->desenhar();
 
 			if (pJogador1) {
 				if (pJogador1->getAtivo()) pJogador1->desenhar();
@@ -241,10 +269,9 @@ namespace Fases {
 					curI = curI->getProx();
 				}
 			}
-
-			pGG->render();
 		}
 	}
+
 
 	void Fase::limpar()
 	{
@@ -292,13 +319,6 @@ namespace Fases {
 		pListaObstaculos->inserir(plat);
 	}
 
-	/* Metodo removido
-	void Fase::criarPlataforma(const sf::Vector2f& pos)
-	{
-		this->criarPlataforma(pos.x, pos.y, 160);
-	}
-	*/
-
 	void Fase::criarChao(float x, float y)
 	{
 		Gerenciador_Grafico* pGG_local = Ente::getGerenciadorGrafico();
@@ -316,5 +336,10 @@ namespace Fases {
 	void Fase::criarMapa()
 	{
 
+	}
+
+	bool Fase::getTerminou() const
+	{
+		return terminou;
 	}
 }

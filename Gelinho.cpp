@@ -26,7 +26,7 @@ namespace Obstaculos
 
     Gelinho::~Gelinho() {}
 
-    void Gelinho::obstaculizar(Jogador* pj)
+    void Gelinho::obstaculizar(Personagens::Jogador* pj)
     {
         if (pj && pj->getObstaculoCooldown() <= sf::Time::Zero)
         {

@@ -70,6 +70,7 @@ void Menu::configurarOpcoes()
         opcoesFase2.push_back(texto);
     }
     posicionarTextos(opcoesFase2);
+
     pOpcoesAtuais = &opcoesPrincipal;
     atualizarDestaque();
 }
@@ -103,19 +104,37 @@ void Menu::atualizarDestaque()
 void Menu::moverCima()
 {
     if (!pOpcoesAtuais || pOpcoesAtuais->empty()) return;
+
     indiceOpcaoSelecionada = (int)((indiceOpcaoSelecionada - 1 + pOpcoesAtuais->size()) % pOpcoesAtuais->size());
+
     atualizarDestaque();
 }
 
 void Menu::moverBaixo()
 {
     if (!pOpcoesAtuais || pOpcoesAtuais->empty()) return;
+
     indiceOpcaoSelecionada = (int)((indiceOpcaoSelecionada + 1) % pOpcoesAtuais->size());
+
     atualizarDestaque();
 }
 
+void Menu::executar()
+{
+    //logica eh controlada pelo loop principal em jogo.cpp
+}
+
+
 void Menu::processarEntrada(sf::Event& evento)
 {
+    estadoAtualInterno = EstadoJogo::Menu;
+
+    if (evento.type == sf::Event::Closed)
+    {
+        estadoAtualInterno = EstadoJogo::Sair;
+        return;
+    }
+
     if (evento.type == sf::Event::KeyPressed)
     {
         if (evento.key.code == sf::Keyboard::Up) {
@@ -153,7 +172,7 @@ void Menu::processarEntrada(sf::Event& evento)
                 estadoAtualInterno = EstadoJogo::Jogando;
             }
             else if (selecionado == "Carregar Jogo") {
-                std::cout << "teste carregar 1" << std::endl;
+                std::cout << "teste Carregar Jogo Fase 1" << std::endl;
                 estadoAtualInterno = EstadoJogo::Jogando;
             }
             else if (selecionado == "Voltar") {
@@ -165,56 +184,32 @@ void Menu::processarEntrada(sf::Event& evento)
                 estadoAtualInterno = EstadoJogo::FaseDois;
             }
             else if (selecionado == "Carregar Jogo") {
-                std::cout << "teste carrefar2" << std::endl;
+                std::cout << "teste Carregar Jogo Fase 2" << std::endl;
                 estadoAtualInterno = EstadoJogo::FaseDois;
             }
             else if (selecionado == "Voltar") {
                 setNivelMenu(MenuNivel::PRINCIPAL, 1);
             }
         }
-    }
-}
 
-void Menu::executar()
-{
-    estadoAtualInterno = EstadoJogo::Menu;
-
-    if (!pGG || !pGG->getJanela()) {
-        estadoAtualInterno = EstadoJogo::Sair;
-        return;
-    }
-
-    sf::Event evento;
-    while (pGG->getJanela()->pollEvent(evento))
-    {
-        if (evento.type == sf::Event::Closed)
-        {
-            estadoAtualInterno = EstadoJogo::Sair;
-            return;
-        }
-
-        processarEntrada(evento);
-
+        // se um estado de jogo foi escolhido, reseta o menu, mas mantem estado para jogo.cpp ver
         if (estadoAtualInterno != EstadoJogo::Menu)
         {
-            // Se um estado de jogo foi escolhido, reseta o menu para a proxima vez
             setNivelMenu(MenuNivel::PRINCIPAL);
-            return;
         }
     }
-
-    pGG->clear();
-    pGG->desenharBackground(); // <--- FUNDO ADICIONADO AQUI
-    desenharOpcoes();
-    pGG->render();
 }
 
 
 void Menu::desenharOpcoes()
 {
     if (!pGG || !pGG->getJanela()) return;
+    // isso reseta a camera para a visao padrao, sem isso ficaria uma tela preta (acho que o menu eh desenhado fora da tela)
+    pGG->getJanela()->setView(pGG->getJanela()->getDefaultView());
 
-    sf::Text titulo("CyberFunny", fonte, 80);
+    pGG->desenharBackground();
+
+    sf::Text titulo("Meu Jogo SFML", fonte, 80);
     titulo.setFillColor(sf::Color::Cyan);
     sf::FloatRect boundsT = titulo.getLocalBounds();
     titulo.setOrigin(boundsT.left + boundsT.width / 2.0f, boundsT.top + boundsT.height / 2.0f);
@@ -247,4 +242,10 @@ void Menu::desenharOpcoes()
 EstadoJogo Menu::getProximoEstado() const
 {
     return estadoAtualInterno;
+}
+
+void Menu::resetarEstadoInterno()
+{
+    estadoAtualInterno = EstadoJogo::Menu;
+    setNivelMenu(MenuNivel::PRINCIPAL, 0); // volta para a tela principal
 }

@@ -24,7 +24,7 @@ int main()
 	}
 	catch (...)
 	{
-		std::cerr << "Ocorreu uma excecao nao-padrao" << std::endl;
+		std::cerr << "excecao diferente" << std::endl;
 		return 3;
 	}
 	return 0;

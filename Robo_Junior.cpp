@@ -11,7 +11,8 @@ Robo_Junior::Robo_Junior(float xi, float yi) : Inimigo(xi, yi), volta(1), raio((
 	this->y = yi;
 	this->velocidade = 150.0f;
 	this->n_vidas = 2;
-	
+	this->n_vidas_max = 2;
+
 
 	if (pGG)
 	{
@@ -19,7 +20,7 @@ Robo_Junior::Robo_Junior(float xi, float yi) : Inimigo(xi, yi), volta(1), raio((
 		if (tex)
 		{
 			pFigura->setTexture(*tex);
-			pFigura->setScale((float) raio / tex->getSize().x, (float) raio / tex->getSize().y);
+			pFigura->setScale((float)raio / tex->getSize().x, (float)raio / tex->getSize().y);
 		}
 	}
 	else
@@ -28,6 +29,7 @@ Robo_Junior::Robo_Junior(float xi, float yi) : Inimigo(xi, yi), volta(1), raio((
 	}
 
 	pFigura->setPosition(sf::Vector2f(static_cast<float>(this->x), static_cast<float>(this->y)));
+	atualizarBarraVida();
 }
 Robo_Junior::~Robo_Junior()
 {
@@ -39,7 +41,7 @@ void Robo_Junior::mover()
 	sf::Vector2f movimento = sf::Vector2f(0.0f, 0.0f);
 	tempo = clock.restart();
 
-	if (volta == 1 && this->x >= xINI + 3*(int)raio) {
+	if (volta == 1 && this->x >= xINI + (int)raio*3) {
 		volta = -1;
 	}
 	else if (volta == -1 && this->x <= xINI) {
@@ -59,8 +61,8 @@ void Robo_Junior::mover()
 
 	Personagem::gravidade(&movimento);
 
-    this->x += movimento.x * tempo.asSeconds() * velocidade;
-    this->y += movimento.y * tempo.asSeconds() * velocidade;
+	this->x += movimento.x * tempo.asSeconds() * velocidade;
+	this->y += movimento.y * tempo.asSeconds() * velocidade;
 
 	setPosicaoGrafica(this->x, this->y);
 }
@@ -81,4 +83,5 @@ void Robo_Junior::salvar()
 void Robo_Junior::executar()
 {
 	this->mover();
+	atualizarBarraVida();
 }
